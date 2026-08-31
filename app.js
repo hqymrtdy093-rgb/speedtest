@@ -1,5 +1,5 @@
-// Set this after deploying the Worker.
-const API_BASE = "https://YOUR-WORKER.workers.dev";
+    // Set this after deploying the Worker.
+const API_BASE = "https://speed-test.hqymrtdy093.workers.dev";
 
 const $ = (id) => document.getElementById(id);
 const start = $("start");
