@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MoonSpeed — Personal Speed Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-dot"></span><span>MoonSpeed</span></div>
+      <div id="status" class="status">Initializing…</div>
+    </header>
+
+    <section class="hero glass">
+      <div class="eyebrow">PERSONAL INTERNET SPEED TEST</div>
+      <h1>Know your real connection.</h1>
+      <p class="sub">A lightweight speed test powered by GitHub Pages + Cloudflare Workers.</p>
+
+      <div class="server-row">
+        <div class="server-card">
+          <div class="label">TEST SERVER</div>
+          <div class="server-main"><span class="flag">◉</span><span id="serverName">Detecting Edge…</span></div>
+          <div id="serverMeta" class="server-meta">Connecting to Worker</div>
+        </div>
+        <button id="modeButton" class="select-btn" title="Server mode">
+          <span id="modeText">Automatic</span><span>⌄</span>
+        </button>
+      </div>
+
+      <div class="meter-wrap">
+        <div class="meter"><div id="meterBar" class="meter-bar"></div></div>
+        <div class="meter-labels"><span>0</span><span id="liveSpeed">— Mbps</span><span id="meterMax">100+ Mbps</span></div>
+      </div>
+
+      <div class="speed-grid">
+        <div class="metric"><div class="metric-title">DOWNLOAD</div><div id="download" class="metric-value">—</div><div class="unit">Mbps</div></div>
+        <div class="metric"><div class="metric-title">UPLOAD</div><div id="upload" class="metric-value">—</div><div class="unit">Mbps</div></div>
+        <div class="metric small"><div class="metric-title">PING</div><div id="ping" class="metric-value">—</div><div class="unit">ms</div></div>
+        <div class="metric small"><div class="metric-title">JITTER</div><div id="jitter" class="metric-value">—</div><div class="unit">ms</div></div>
+      </div>
+
+      <button id="start" class="start-btn">START TEST</button>
+      <div id="phase" class="phase">Ready</div>
+    </section>
+
+    <section class="info-grid">
+      <div class="info glass"><div class="info-title">EDGE</div><div id="edgeValue">—</div><div class="info-note">Cloudflare point of presence</div></div>
+      <div class="info glass"><div class="info-title">CLIENT</div><div id="clientValue">—</div><div class="info-note">Detected country / city</div></div>
+      <div class="info glass"><div class="info-title">METHOD</div><div>Browser stream</div><div class="info-note">No external VPS required</div></div>
+    </section>
+
+    <footer>MoonSpeed v0.1 · For personal diagnostics</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
