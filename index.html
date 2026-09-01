@@ -19,22 +19,53 @@
     <section class="hero glass">
       <div class="eyebrow">PERSONAL INTERNET SPEED TEST</div>
       <h1>Know your real connection.</h1>
-      <p class="sub">A lightweight speed test powered by GitHub Pages + Cloudflare Workers.</p>
+      <p class="sub">GitHub Pages + Cloudflare Workers. No external VPS required.</p>
 
       <div class="server-row">
         <div class="server-card">
-          <div class="label">TEST SERVER</div>
-          <div class="server-main"><span class="flag">◉</span><span id="serverName">Detecting Edge…</span></div>
-          <div id="serverMeta" class="server-meta">Connecting to Worker</div>
+          <div class="server-head">
+            <div>
+              <div class="label">TEST SERVER</div>
+              <div class="server-main"><span id="serverFlag" class="flag">◉</span><span id="serverName">Detecting Edge…</span></div>
+              <div id="serverMeta" class="server-meta">Connecting to Worker</div>
+            </div>
+            <div class="server-select-wrap">
+              <button id="serverButton" class="select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span id="modeText">Automatic</span><span class="chevron">⌄</span>
+              </button>
+              <div id="serverMenu" class="server-menu" role="listbox" aria-label="Server selection">
+                <button data-server="AUTO" role="option" class="server-option selected"><span>◎</span><span><b>Automatic</b><small>Nearest Cloudflare Edge</small></span></button>
+                <button data-server="DE" role="option" class="server-option"><span>🇩🇪</span><span><b>Germany</b><small>Preference</small></span></button>
+                <button data-server="US" role="option" class="server-option"><span>🇺🇸</span><span><b>United States</b><small>Preference</small></span></button>
+                <button data-server="NL" role="option" class="server-option"><span>🇳🇱</span><span><b>Netherlands</b><small>Preference</small></span></button>
+                <button data-server="FR" role="option" class="server-option"><span>🇫🇷</span><span><b>France</b><small>Preference</small></span></button>
+                <button data-server="GB" role="option" class="server-option"><span>🇬🇧</span><span><b>United Kingdom</b><small>Preference</small></span></button>
+                <button data-server="TR" role="option" class="server-option"><span>🇹🇷</span><span><b>Türkiye</b><small>Preference</small></span></button>
+                <button data-server="AE" role="option" class="server-option"><span>🇦🇪</span><span><b>UAE</b><small>Preference</small></span></button>
+              </div>
+            </div>
+          </div>
         </div>
-        <button id="modeButton" class="select-btn" title="Server selection">
-          <span id="modeText">Automatic</span><span>⌄</span>
-        </button>
+      </div>
+
+      <div class="gauge-wrap">
+        <div class="gauge">
+          <svg class="gauge-svg" viewBox="0 0 420 230" aria-hidden="true">
+            <path class="gauge-track" d="M 55 200 A 155 155 0 0 1 365 200" pathLength="100" />
+            <path id="gaugeArc" class="gauge-fill" d="M 55 200 A 155 155 0 0 1 365 200" pathLength="100" />
+            <g id="gaugeTicks"></g>
+            <line id="gaugeNeedle" class="gauge-needle" x1="210" y1="204" x2="210" y2="82" />
+            <circle cx="210" cy="204" r="11" class="gauge-hub" />
+          </svg>
+          <div class="gauge-caption">CURRENT SPEED</div>
+          <div id="liveSpeed" class="gauge-speed">—</div>
+          <div class="gauge-unit">Mbps</div>
+        </div>
       </div>
 
       <div class="meter-wrap">
         <div class="meter"><div id="meterBar" class="meter-bar"></div></div>
-        <div class="meter-labels"><span>0</span><span id="liveSpeed">— Mbps</span><span id="meterMax">100+ Mbps</span></div>
+        <div class="meter-labels"><span>0%</span><span id="meterProgress">Ready</span><span>TEST PROGRESS</span></div>
       </div>
 
       <div class="speed-grid">
@@ -49,12 +80,11 @@
     </section>
 
     <section class="info-grid">
-      <div class="info glass"><div class="info-title">EDGE</div><div id="edgeValue">—</div><div class="info-note">Cloudflare point of presence</div></div>
-      <div class="info glass"><div class="info-title">CLIENT</div><div id="clientValue">—</div><div class="info-note">Detected country / city</div></div>
-      <div class="info glass"><div class="info-title">METHOD</div><div>Browser stream</div><div class="info-note">No external VPS required</div></div>
+      <div class="info glass"><div class="info-title">CLIENT</div><div id="clientValue">—</div><div class="info-note">Detected city / country</div></div>
+      <div class="info glass"><div class="info-title">SERVER</div><div id="serverInfoValue">—</div><div class="info-note">Actual Worker / Cloudflare Edge</div></div>
     </section>
 
-    <footer>MoonSpeed v0.1 · For personal diagnostics</footer>
+    <footer>MoonSpeed v0.3 · For personal diagnostics</footer>
   </main>
   <script src="app.js"></script>
 </body>
