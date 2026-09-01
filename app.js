@@ -40,12 +40,14 @@ function renderServer() {
     $("serverName").textContent = e.colo ? `Automatic · ${e.colo}` : "Automatic";
     $("serverMeta").textContent = [e.city, e.countryName].filter(Boolean).join(", ") || "Nearest Cloudflare Edge";
     $("modeText").textContent = "Automatic";
-    $("serverInfoValue").textContent = e.colo ? `Cloudflare ${e.colo}` : "Cloudflare Edge";
+    $("serverInfoValue").textContent = e.colo ? `Cloudflare Edge ${e.colo}` : "Cloudflare Edge";
+    $("serverInfoNote").textContent = [e.city, e.countryName, e.asOrganization ? `AS${e.asn || ""} ${e.asOrganization}` : ""].filter(Boolean).join(" · ") || "Actual Cloudflare Edge";
   } else {
     $("serverName").textContent = regionLabel(code);
     $("serverMeta").textContent = "Selected preference · same Worker endpoint";
     $("modeText").textContent = regionLabel(code);
-    $("serverInfoValue").textContent = `Worker · ${regionLabel(code)} preference`;
+    $("serverInfoValue").textContent = `Cloudflare Edge ${state.edge?.colo || "—"}`;
+    $("serverInfoNote").textContent = `Manual preference: ${regionLabel(code)} · actual Edge is shown above`;
   }
   document.querySelectorAll(".server-option").forEach((el) => el.classList.toggle("selected", el.dataset.server === code));
 }
@@ -103,19 +105,28 @@ async function measureDownload(seconds = 8) {
   const elapsed = Math.max(0.001, (performance.now() - started) / 1000);
   return bytes * 8 / elapsed / 1e6;
 }
-function makeUploadPayload(size = 256 * 1024) {
+function makeUploadPayload(size = 1024 * 1024) {
   const bytes = new Uint8Array(size);
-  for (let offset = 0; offset < size; offset += 65536) {
-    crypto.getRandomValues(bytes.subarray(offset, Math.min(offset + 65536, size)));
+  if (crypto?.getRandomValues) {
+    for (let offset = 0; offset < size; offset += 65536) {
+      crypto.getRandomValues(bytes.subarray(offset, Math.min(offset + 65536, size)));
+    }
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = (Math.random() * 256) | 0;
   }
   return bytes;
 }
 async function uploadOnce(payload, signal) {
+  // text/plain is a CORS-safelisted content type, avoiding an OPTIONS preflight on GitHub Pages.
   const r = await fetch(api("/upload"), {
     method: "POST", body: payload, signal, cache: "no-store",
-    headers: { "Content-Type": "application/octet-stream", "X-SpeedTest-Upload": "1" }
+    headers: { "Content-Type": "text/plain;charset=UTF-8" }
   });
-  if (!r.ok) throw new Error(`Upload HTTP ${r.status}`);
+  if (!r.ok) {
+    let detail = "";
+    try { detail = (await r.json()).error || ""; } catch (_) {}
+    throw new Error(`Upload HTTP ${r.status}${detail ? `: ${detail}` : ""}`);
+  }
   const result = await r.json();
   return Number(result.receivedBytes) || payload.byteLength;
 }
@@ -123,24 +134,32 @@ async function measureUpload(seconds = 8) {
   const started = performance.now();
   const deadline = started + seconds * 1000;
   let bytes = 0;
+  let failures = 0;
   while (performance.now() < deadline) {
-    const tasks = Array.from({ length: 3 }, async () => {
-      const payload = makeUploadPayload();
-      const remaining = Math.max(1000, deadline - performance.now());
+    const tasks = Array.from({ length: 2 }, async () => {
+      const payload = makeUploadPayload(1024 * 1024);
+      const remaining = Math.max(1200, deadline - performance.now());
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), remaining);
-      try { return await uploadOnce(payload, controller.signal); }
-      catch (e) { if (e.name !== "AbortError") throw e; return 0; }
-      finally { clearTimeout(timer); }
+      try {
+        return await uploadOnce(payload, controller.signal);
+      } catch (e) {
+        failures++;
+        console.warn("Upload request failed", e);
+        return 0;
+      } finally { clearTimeout(timer); }
     });
     const batch = await Promise.all(tasks);
     bytes += batch.reduce((a, b) => a + b, 0);
     const now = performance.now();
     const elapsed = Math.max(0.001, (now - started) / 1000);
     const mbps = bytes * 8 / elapsed / 1e6;
-    setGauge(mbps); setProgress(55 + Math.min(43, elapsed / seconds * 43), `Upload ${Math.round(elapsed)}s`);
+    setGauge(mbps);
+    setProgress(55 + Math.min(43, elapsed / seconds * 43), `Upload ${Math.round(elapsed)}s`);
+    if (failures >= 4 && bytes === 0) throw new Error("Upload requests are being blocked. Check Worker CORS/URL and HTTPS.");
   }
   const elapsed = Math.max(0.001, (performance.now() - started) / 1000);
+  if (bytes === 0) throw new Error("No upload data reached the Worker.");
   return bytes * 8 / elapsed / 1e6;
 }
 function toggleMenu(force) {
